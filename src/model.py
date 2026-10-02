@@ -1,3 +1,6 @@
+import pickle
+from pathlib import Path
+
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
@@ -73,6 +76,20 @@ def train_one_hot_model(x_train, x_test, y_train, y_test):
     probabilities = model.predict_proba(x_test)[:, 1]
     metrics = calculate_metrics(y_test, predictions)
     return model, predictions, probabilities, metrics
+
+
+def save_model(model, path):
+    """Save the trained one-hot model so it can be loaded again without retraining."""
+    model_path = Path(path)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    with model_path.open("wb") as model_file:
+        pickle.dump(model, model_file)
+
+
+def load_model(path):
+    """Load a model that was saved with pickle."""
+    with Path(path).open("rb") as model_file:
+        return pickle.load(model_file)
 
 
 def build_predictions_frame(customer_ids, actual, predicted, probabilities):

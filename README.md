@@ -62,7 +62,7 @@ Required packages: `numpy`, `pandas`, `scikit-learn`, and `pytest`.
 python main.py --input data/raw/Telco-Customer-Churn.csv
 ```
 
-The program prints a validation report, exploration findings, and both model scores. It writes `output/predictions.csv` with `customerID`, `actual_churn`, `predicted_churn`, and `churn_probability`.
+The program prints a validation report, exploration findings, and both model scores. It writes `output/predictions.csv` with `customerID`, `actual_churn`, `predicted_churn`, and `churn_probability`. It also saves the one-hot Logistic Regression model to `output/churn_model.pkl` with pickle.
 
 ## How to test
 
@@ -130,12 +130,11 @@ Precision means: of the customers flagged as likely to churn, about 66.7% actual
 - This is one snapshot, not an experiment, so the findings are associations.
 - Accuracy alone is misleading. A model that always predicts "stay" would be about 73.5% accurate and would catch no churners.
 - Recall is 0.560, so many customers who leave are still missed.
-- The optional decision tree, charts, pickle file, and GitHub Actions workflow are not in this version yet.
+- The optional decision tree and charts are not in this version yet.
+- GitHub Actions runs the tests on every push. The saved pickle file is created when you run `main.py` and is not committed.
 
 ## Future improvements
 
-- Save the trained model with pickle.
-- Add GitHub Actions so pytest runs on every push.
 - Compare a Decision Tree with Logistic Regression.
 - Add charts for contract, internet service, and tenure.
 
@@ -149,4 +148,5 @@ About 26.5% of customers churned.
 One-hot encoding accuracy: 0.809
 Saved: output/predictions.csv
 Prediction rows: 2113
+Saved model: output/churn_model.pkl
 ```

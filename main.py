@@ -6,6 +6,7 @@ from src.data_loader import load_csv
 from src.evaluation import format_metrics
 from src.model import (
     build_predictions_frame,
+    save_model,
     split_data,
     train_label_encoded_model,
     train_one_hot_model,
@@ -58,6 +59,10 @@ def run(input_path, output_path):
     predictions_frame.to_csv(output, index=False)
     print(f"Saved: {output}")
     print(f"Prediction rows: {len(predictions_frame)}")
+
+    model_path = output.parent / "churn_model.pkl"
+    save_model(one_hot_model, model_path)
+    print(f"Saved model: {model_path}")
     print("\nPipeline completed successfully.")
     return one_hot_model
 

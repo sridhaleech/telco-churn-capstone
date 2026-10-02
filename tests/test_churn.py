@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.model import build_predictions_frame, split_data, train_one_hot_model
+from src.model import build_predictions_frame, load_model, save_model, split_data, train_one_hot_model
 from src.preprocessing import clean_dataframe
 from src.validator import REQUIRED_COLUMNS, validate_dataframe
 
@@ -103,3 +103,22 @@ def test_model_predictions_use_only_valid_classes():
     )
     assert set(predictions).issubset({0, 1})
     assert set(REQUIRED_COLUMNS) == set(sample_row())
+
+
+def test_pickled_model_makes_the_same_predictions(tmp_path):
+    rows = []
+    for index in range(20):
+        churn = "Yes" if index < 6 else "No"
+        rows.append(sample_row(customerID=f"CUST-{index:04d}", tenure=index, Churn=churn))
+    cleaned = clean_dataframe(pd.DataFrame(rows))
+    features = cleaned.drop(columns=["customerID", "Churn"])
+    target = cleaned["Churn"]
+    ids = cleaned["customerID"]
+    x_train, x_test, y_train, y_test, _ids_train, _ids_test = split_data(features, target, ids)
+    model, predictions, _probabilities, _metrics = train_one_hot_model(x_train, x_test, y_train, y_test)
+
+    model_path = tmp_path / "churn_model.pkl"
+    save_model(model, model_path)
+    loaded = load_model(model_path)
+
+    assert list(loaded.predict(x_test)) == list(predictions)
