@@ -1,0 +1,7 @@
+.venv/
+.cline_storage/
+__pycache__/
+*.pyc
+.pytest_cache/
+output/
+.DS_Store
