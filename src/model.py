@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -69,6 +70,28 @@ def train_one_hot_model(x_train, x_test, y_train, y_test):
         steps=[
             ("preprocessor", preprocessor),
             ("classifier", LogisticRegression(max_iter=1000)),
+        ]
+    )
+    model.fit(x_train, y_train)
+    predictions = model.predict(x_test)
+    probabilities = model.predict_proba(x_test)[:, 1]
+    metrics = calculate_metrics(y_test, predictions)
+    return model, predictions, probabilities, metrics
+
+
+def train_random_forest(x_train, x_test, y_train, y_test):
+    """Random Forest is the extra model from class. Same one-hot columns as Logistic Regression."""
+    numeric, categorical = numeric_and_categorical_columns(x_train)
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("numeric", "passthrough", numeric),
+            ("categorical", OneHotEncoder(handle_unknown="ignore"), categorical),
+        ]
+    )
+    model = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", RandomForestClassifier(n_estimators=100, random_state=42)),
         ]
     )
     model.fit(x_train, y_train)

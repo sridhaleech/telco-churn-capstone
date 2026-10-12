@@ -6,10 +6,12 @@ from src.data_loader import load_csv
 from src.evaluation import format_metrics
 from src.model import (
     build_predictions_frame,
+    load_model,
     save_model,
     split_data,
     train_label_encoded_model,
     train_one_hot_model,
+    train_random_forest,
 )
 from src.preprocessing import clean_dataframe, split_features_and_target
 from src.validator import format_report, validate_dataframe
@@ -45,11 +47,15 @@ def run(input_path, output_path):
     one_hot_model, predictions, probabilities, one_hot_metrics = train_one_hot_model(
         x_train, x_test, y_train, y_test
     )
+    forest_model, _forest_predictions, _forest_probabilities, forest_metrics = train_random_forest(
+        x_train, x_test, y_train, y_test
+    )
 
     print("\n[6] Evaluating models...")
     print(format_metrics("Logistic Regression with label encoding", label_metrics))
     print(format_metrics("Logistic Regression with one-hot encoding", one_hot_metrics))
-    print("One-hot encoding is the model used for the predictions file.")
+    print(format_metrics("Random Forest", forest_metrics))
+    print("The predictions file still uses one-hot Logistic Regression.")
     print("customerID was not used as a feature.")
 
     print("\n[7] Writing predictions...")
@@ -63,8 +69,22 @@ def run(input_path, output_path):
     model_path = output.parent / "churn_model.pkl"
     save_model(one_hot_model, model_path)
     print(f"Saved model: {model_path}")
+
+    forest_path = output.parent / "random_forest_model.pkl"
+    save_model(forest_model, forest_path)
+    loaded_forest = load_model(forest_path)
+    sample = x_test.iloc[[0]]
+    sample_prediction = int(loaded_forest.predict(sample)[0])
+    sample_probability = float(loaded_forest.predict_proba(sample)[0, 1])
+    sample_actual = int(y_test.iloc[0])
+    print(f"Saved Random Forest: {forest_path}")
+    print("Reloaded the Random Forest from pickle and predicted one test customer:")
+    print(f"customerID: {id_test.iloc[0]}")
+    print(f"actual: {'Yes' if sample_actual == 1 else 'No'}")
+    print(f"predicted: {'Yes' if sample_prediction == 1 else 'No'}")
+    print(f"churn probability: {sample_probability:.3f}")
     print("\nPipeline completed successfully.")
-    return one_hot_model
+    return one_hot_model, forest_model
 
 
 if __name__ == "__main__":
